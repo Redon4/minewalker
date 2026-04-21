@@ -14,21 +14,27 @@ class MineWalker:
         self.game = True
         self.discovered = {(0, 0)}
         self.died = False
+        self.won = False
 
     @classmethod
     def run(cls, stdscr, width=10, height=10):
-        clas = cls(stdscr, width, height)
+        while True:
+            clas = cls(stdscr, width, height)
 
-        while clas.game:
-            clas.board[clas.y][clas.x] = 3
-            clas.draw()
-            clas.get_input()
-        if clas.died:
-            clas.draw()
-            clas.stdscr.addstr("Game Over! Press enter or spaceto exit.")
+            while clas.game:
+                clas.board[clas.y][clas.x] = 3
+                clas.draw()
+                clas.get_input()
+            msg = "You won! " if clas.won else "You quit! "
+            if clas.died:
+                clas.draw()
+                msg = "Game Over! "
+            clas.stdscr.addstr(f"{msg}Press enter to exit or space to play again.")
             while True:
                 key = clas.stdscr.getkey()
-                if key == "\n" or key == " ":
+                if key == "\n":
+                    return
+                elif key == " ":
                     break
 
     def draw(self):
