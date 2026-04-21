@@ -16,7 +16,10 @@ class MineWalker:
         self.died = False
         self.won = False
 
-    @classmethod
+        curses.start_color()
+        curses.use_default_colors()
+
+    @classmethod # damit man keine instance machen muss
     def run(cls, stdscr, width=10, height=10):
         while True:
             clas = cls(stdscr, width, height)
@@ -32,13 +35,14 @@ class MineWalker:
             clas.stdscr.addstr(f"{msg}Press enter to exit or space to play again.")
             while True:
                 key = clas.stdscr.getkey()
-                if key == "\n":
-                    return
-                elif key == " ":
-                    break
+                if key == "\n": # enter
+                    return # beende
+                elif key == " ": # space
+                    break # starte neu
+
 
     def draw(self):
-        self.stdscr.clear()
+        self.stdscr.erase()
 
         around_area = self.board[max(0, self.y-1):min(self.y+2, len(self.board))]
         around_cnt=0
@@ -65,14 +69,9 @@ class MineWalker:
                 else:
                     self.draw_board[y].append("O")
 
-
-
         self.stdscr.move(1, 0)
         for row in self.draw_board:
             self.stdscr.addstr(" ".join(row) + "\n")
-
-
-        
 
         self.stdscr.refresh()
 
