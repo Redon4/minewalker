@@ -34,6 +34,14 @@ class MineWalker:
     def draw(self):
         self.stdscr.clear()
 
+        around_area = self.board[self.y-1:self.y+2]
+        around_cnt=0
+        for row in around_area:
+            around_cnt += row[self.x-1:self.x+2].count(1)
+
+
+        self.stdscr.addstr(f"Mines around: {around_cnt}")
+
 
         self.draw_board=[]
         for y in range(len(self.board)):
@@ -53,8 +61,12 @@ class MineWalker:
 
 
 
+        self.stdscr.move(1, 0)
         for row in self.draw_board:
             self.stdscr.addstr(" ".join(row) + "\n")
+
+
+        
 
         self.stdscr.refresh()
 
@@ -72,7 +84,7 @@ class MineWalker:
                 self.x -= 1
             case "d" | curses.KEY_RIGHT:
                 self.x += 1
-            case " " | "\n":
+            case " " | "\n": # beende das spiel
                 self.game = False
 
 
