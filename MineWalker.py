@@ -34,10 +34,10 @@ class MineWalker:
     def draw(self):
         self.stdscr.clear()
 
-        around_area = self.board[self.y-1:self.y+2]
+        around_area = self.board[max(0, self.y-1):min(self.y+2, len(self.board))]
         around_cnt=0
         for row in around_area:
-            around_cnt += row[self.x-1:self.x+2].count(1)
+            around_cnt += row[max(0, self.x-1):min(self.x+2, len(row))].count(1)
 
 
         self.stdscr.addstr(f"Mines around: {around_cnt}")
