@@ -2,12 +2,14 @@
 
 import curses
 from gen_mines import gen_mines
+from perry import Perry
 
 
 # main class
 
 class MineWalker:
     def __init__(self, stdscr, width=10, height=10):
+        self.p = Perry(stdscr)
         self.stdscr = stdscr
         self.x, self.y = 0, 0
         self.board = gen_mines(width, height)
@@ -32,6 +34,7 @@ class MineWalker:
             if clas.died:
                 clas.draw()
                 msg = "Game Over! "
+            clas.stdscr.move(len(clas.board)+2, 0)
             clas.stdscr.addstr(f"{msg}Press enter to exit or space to play again.")
             while True:
                 key = clas.stdscr.getkey()
@@ -44,34 +47,48 @@ class MineWalker:
     def draw(self):
         self.stdscr.erase()
 
+        self.stdscr.addstr("Use WASD or arrow keys to move, space or enter to quit." + "\n")
+
+
         around_area = self.board[max(0, self.y-1):min(self.y+2, len(self.board))]
         around_cnt=0
         for row in around_area:
             around_cnt += row[max(0, self.x-1):min(self.x+2, len(row))].count(1)
 
 
-        self.stdscr.addstr(f"Mines around: {around_cnt}")
+        self.stdscr.addstr(f"Mines around: {around_cnt}" + "\n")
 
 
-        self.draw_board=[]
+        # self.draw_board=[]
         for y in range(len(self.board)):
-            self.draw_board.append([])
+            # self.draw_board.append([])
             for x in range(len(self.board[0])):
-                if self.board[y][x] == 3:
-                    self.draw_board[y].append("X")
+                if (x, y) == (self.x, self.y):
+                    self.stdscr.addstr("X ", self.p.color("green")) # zeige den Spieler an
+
 
                 elif (x, y) in self.discovered:
-                    self.draw_board[y].append(" ")
+                    # self.draw_board[y].append(" ")
+                    self.stdscr.addstr("  ")
 
                 elif self.died and self.board[y][x] == 1: # wenn du durch eine Mine gestorben bist, zeige alle Minen an
-                    self.draw_board[y].append("*")
+                    # self.draw_board[y].append("*")
+                    self.stdscr.addstr("* ", self.p.color("red"))
 
                 else:
-                    self.draw_board[y].append("O")
+                    # self.draw_board[y].append("O")
+                    self.stdscr.addstr("O ")
+            self.stdscr.addstr("\n")
 
-        self.stdscr.move(1, 0)
-        for row in self.draw_board:
-            self.stdscr.addstr(" ".join(row) + "\n")
+        self.stdscr.move(2, 0)
+        #self.stdscr.addstr("-" * (len(self.board[0])*2-1) + "\n") # trennlinie
+        #for row in self.draw_board:
+        #    self.stdscr.addstr(" ".join(row) + "\n")
+        #self.stdscr.addstr("-" * (len(self.board[0])*2-1) + "\n") # trennlinie
+
+        #self.stdscr.move(self.y+1+1, self.x*2)
+        #self.stdscr.addstr("X", self.p.color("green")) # zeige den Spieler an
+        self.stdscr.move(self.y+1+1, self.x*2)
 
         self.stdscr.refresh()
 
