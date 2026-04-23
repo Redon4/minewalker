@@ -3,6 +3,7 @@
 import curses
 from gen_mines import gen_mines
 from perry import Perry
+from score import save_score, load_score
 
 
 # main class
@@ -18,6 +19,8 @@ class MineWalker:
         self.died = False
         self.won = False
 
+        self.highscore = load_score()
+
         curses.start_color()
         curses.use_default_colors()
         curses.curs_set(0)
@@ -31,10 +34,8 @@ class MineWalker:
                 clas.board[clas.y][clas.x] = 3
                 clas.draw()
                 clas.get_input()
-            msg = "You won! " if clas.won else "You quit! "
-            if clas.died:
-                clas.draw()
-                msg = "Game Over! "
+            msg = "You won! " if clas.won else ("You quit! " if not clas.died else "Game Over! ")
+            clas.draw()
             clas.stdscr.move(len(clas.board)+2, 0)
             clas.stdscr.addstr(f"{msg}Press enter to exit or space to play again.")
             while True:
@@ -43,12 +44,14 @@ class MineWalker:
                     return # beende
                 elif key == " ": # space
                     break # starte neu
+            save_score(max(clas.highscore, len(clas.discovered) - 1)) # save the highscore
 
 
     def draw(self):
         self.stdscr.erase()
 
-        self.stdscr.addstr("Use WASD or arrow keys to move, space or enter to quit." + "\n")
+        self.stdscr.addstr(f"Score: {len(self.discovered) - 1}")
+        self.stdscr.addstr("\t| Use WASD or arrow keys to move, space or enter to quit." + "\n")
 
 
         around_area = self.board[max(0, self.y-1):min(self.y+2, len(self.board))]
@@ -57,15 +60,17 @@ class MineWalker:
             around_cnt += row[max(0, self.x-1):min(self.x+2, len(row))].count(1)
 
 
-        self.stdscr.addstr(f"Mines around: {around_cnt}" + "\n")
+        self.stdscr.addstr(f"Mines around: {around_cnt}", self.p.color("green") if around_cnt == 0 else self.p.color("red"))
+        self.stdscr.addstr("\t| ")
 
+        self.stdscr.addstr(f"Highscore: {self.highscore}" + "\n", self.p.color("yellow"))
 
         # self.draw_board=[]
         for y in range(len(self.board)):
             # self.draw_board.append([])
             for x in range(len(self.board[0])):
                 if (x, y) == (self.x, self.y) and not self.died:
-                    self.stdscr.addstr("X", self.p.color("green", rev=True)) # show the player
+                    self.stdscr.addstr("X", self.p.color("green", rev=False)) # show the player
                     self.stdscr.addstr(" ")
 
 
@@ -73,14 +78,14 @@ class MineWalker:
                     # self.draw_board[y].append(" ")
                     self.stdscr.addstr("  ")
 
-                elif self.died and self.board[y][x] == 1: # if you died, show all mines
+                elif not self.game and self.board[y][x] == 1: # if you died, show all mines
                     # self.draw_board[y].append("*")
                     if (x, y) == (self.x, self.y):
                         self.stdscr.addstr("X", self.p.color("red", rev=True))
                         self.stdscr.addstr(" ")
                     else:
                         self.stdscr.addstr("* ", self.p.color("red"))
-                    
+
 
                 else:
                     # self.draw_board[y].append("O")
@@ -90,7 +95,6 @@ class MineWalker:
         # self.stdscr.move(2, 0)
         # self.stdscr.move(self.y+1+1, self.x*2)
 
-        self.stdscr.addstr(f"Score: {len(self.discovered) - 1}")
 
         self.stdscr.refresh()
 
@@ -108,7 +112,7 @@ class MineWalker:
                 self.x -= 1
             case "d" | curses.KEY_RIGHT:
                 self.x += 1
-            case " " | "\n": # beende das spiel
+            case " " | "\n": # quit
                 self.game = False
 
 
