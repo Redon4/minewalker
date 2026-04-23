@@ -8,11 +8,11 @@ from perry import Perry
 # main class
 
 class MineWalker:
-    def __init__(self, stdscr, width=10, height=10):
+    def __init__(self, stdscr, width=10, height=10, density=0.2):
         self.p = Perry(stdscr)
         self.stdscr = stdscr
         self.x, self.y = 0, 0
-        self.board = gen_mines(width, height)
+        self.board = gen_mines(width, height, density)
         self.game = True
         self.discovered = {(0, 0)}
         self.died = False
@@ -22,9 +22,9 @@ class MineWalker:
         curses.use_default_colors()
 
     @classmethod # damit man keine instance machen muss
-    def run(cls, stdscr, width=10, height=10):
+    def run(cls, stdscr, width=10, height=10, density=0.2):
         while True:
-            clas = cls(stdscr, width, height)
+            clas = cls(stdscr, width, height, density)
 
             while clas.game:
                 clas.board[clas.y][clas.x] = 3
@@ -64,7 +64,7 @@ class MineWalker:
             # self.draw_board.append([])
             for x in range(len(self.board[0])):
                 if (x, y) == (self.x, self.y):
-                    self.stdscr.addstr("X ", self.p.color("green")) # zeige den Spieler an
+                    self.stdscr.addstr("X ", self.p.color(-1)) # zeige den Spieler an
 
 
                 elif (x, y) in self.discovered:
