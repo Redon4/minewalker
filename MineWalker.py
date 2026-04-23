@@ -20,6 +20,7 @@ class MineWalker:
 
         curses.start_color()
         curses.use_default_colors()
+        curses.curs_set(0)
 
     @classmethod # damit man keine instance machen muss
     def run(cls, stdscr, width=10, height=10, density=0.2):
@@ -88,6 +89,8 @@ class MineWalker:
 
         # self.stdscr.move(2, 0)
         # self.stdscr.move(self.y+1+1, self.x*2)
+
+        self.stdscr.addstr(f"Score: {len(self.discovered) - 1}")
 
         self.stdscr.refresh()
 
