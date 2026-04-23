@@ -63,32 +63,31 @@ class MineWalker:
         for y in range(len(self.board)):
             # self.draw_board.append([])
             for x in range(len(self.board[0])):
-                if (x, y) == (self.x, self.y):
-                    self.stdscr.addstr("X ", self.p.color(-1)) # zeige den Spieler an
+                if (x, y) == (self.x, self.y) and not self.died:
+                    self.stdscr.addstr("X", self.p.color("green", rev=True)) # show the player
+                    self.stdscr.addstr(" ")
 
 
                 elif (x, y) in self.discovered:
                     # self.draw_board[y].append(" ")
                     self.stdscr.addstr("  ")
 
-                elif self.died and self.board[y][x] == 1: # wenn du durch eine Mine gestorben bist, zeige alle Minen an
+                elif self.died and self.board[y][x] == 1: # if you died, show all mines
                     # self.draw_board[y].append("*")
-                    self.stdscr.addstr("* ", self.p.color("red"))
+                    if (x, y) == (self.x, self.y):
+                        self.stdscr.addstr("X", self.p.color("red", rev=True))
+                        self.stdscr.addstr(" ")
+                    else:
+                        self.stdscr.addstr("* ", self.p.color("red"))
+                    
 
                 else:
                     # self.draw_board[y].append("O")
                     self.stdscr.addstr("O ")
             self.stdscr.addstr("\n")
 
-        self.stdscr.move(2, 0)
-        #self.stdscr.addstr("-" * (len(self.board[0])*2-1) + "\n") # trennlinie
-        #for row in self.draw_board:
-        #    self.stdscr.addstr(" ".join(row) + "\n")
-        #self.stdscr.addstr("-" * (len(self.board[0])*2-1) + "\n") # trennlinie
-
-        #self.stdscr.move(self.y+1+1, self.x*2)
-        #self.stdscr.addstr("X", self.p.color("green")) # zeige den Spieler an
-        self.stdscr.move(self.y+1+1, self.x*2)
+        # self.stdscr.move(2, 0)
+        # self.stdscr.move(self.y+1+1, self.x*2)
 
         self.stdscr.refresh()
 
