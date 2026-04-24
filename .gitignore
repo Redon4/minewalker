@@ -1,0 +1,4 @@
+.vscode
+# .gitignore
+__pycache__/
+highscore.pkl
