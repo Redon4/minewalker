@@ -1,7 +1,7 @@
 # imports:
 
 import curses
-from gen_mines import gen_mines
+from gen_mines import gen_mines, clear_path
 from perry import Perry
 from score import save_score, load_score
 
@@ -13,7 +13,7 @@ class MineWalker:
         self.p = Perry(stdscr)
         self.stdscr = stdscr
         self.x, self.y = 0, 0
-        self.board = gen_mines(width, height, density)
+        self.board = clear_path(gen_mines(width, height, density))
         self.game = True
         self.discovered = {(0, 0)}
         self.died = False

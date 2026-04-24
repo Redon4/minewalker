@@ -3,6 +3,6 @@ from MineWalker import MineWalker
 
 if __name__ == "__main__":
     width, height = 20, 20
-    density = 0.1
+    density = 0.2
 
     curses.wrapper(MineWalker.run, width, height, density)
