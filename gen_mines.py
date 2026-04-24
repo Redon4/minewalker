@@ -2,7 +2,7 @@ import random # maybe, this is test stuff
 
 def gen_mines(w, h, density):
     choice_list = [0] * int(1 / density - 1) + [1] # proper desity
-    mines = [[random.choice(choice_list) for _ in range(w)] for _ in range(h)] # damit die change for 1 kleiner ist
+    mines = [[random.choice(choice_list) for _ in range(w)] for _ in range(h)]
     mines[0][:2] = [0, 0] # spawn area
     mines[1][:2] = [0, 0]
 
@@ -10,10 +10,31 @@ def gen_mines(w, h, density):
     mines[-2][-2:] = [0, 0]
     return mines
 
+def clear_path(mines):
+    current_pos = [0, 0] # x, y
+    while (current_pos[0] != len(mines[0]) - 1 or current_pos[1] != len(mines) - 1):
+        temp_pos = random.randint(0, 3)
+        match temp_pos:
+            case 0:
+                if current_pos[1] - 1 >= 0:
+                    current_pos[1] -= 1
+            case 1:
+                if current_pos[0] + 1 <= len(mines[0]) - 1:
+                    current_pos[0] += 1
+            case 2:
+                if current_pos[1] + 1 <= len(mines) - 1:
+                    current_pos[1] += 1
+            case 3:
+                if current_pos[0] - 1 >= 0:
+                    current_pos[0] -= 1
+        mines[current_pos[0]][current_pos[1]] = 0
+    return mines
 
-if __name__ == "__main__": # zum testen
+
+
+if __name__ == "__main__":
     w, h = 10, 10
     density = 1
-    mines = gen_mines(w, h, density)
+    mines = clear_path(gen_mines(w, h, density))
     for row in mines:
         print(" ".join(str(x) for x in row))
