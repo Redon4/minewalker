@@ -5,7 +5,7 @@ It's inspired by Minesweeper, but instead of floating above and only stepping on
 
 ## How to play
 - Movement: Arrow keys or WASD
-- Marking cells: "e" or "m" and than a direction with the same keys as the movement
+- Marking cells: "e", "f" or "m" followed by a direction with the same keys as the movement
 
-- Open game over menu: At any time using the space or enter key
-- Game over Menu:  Press "space" to play again or "enter" to quit
+- Open game over menu: At any time using space, enter or "q"
+- Game over Menu:  Press space or enter to play again, press "q" to quit
