@@ -12,22 +12,37 @@ def gen_mines(w, h, density):
 
 def clear_path(mines):
     current_pos = [0, 0] # x, y
+    c=0
     while (current_pos[0] != len(mines[0]) - 1 or current_pos[1] != len(mines) - 1):
-        temp_pos = random.randint(0, 3)
-        match temp_pos:
-            case 0:
-                if current_pos[1] - 1 >= 0:
-                    current_pos[1] -= 1
-            case 1:
-                if current_pos[0] + 1 <= len(mines[0]) - 1:
-                    current_pos[0] += 1
-            case 2:
-                if current_pos[1] + 1 <= len(mines) - 1:
-                    current_pos[1] += 1
-            case 3:
-                if current_pos[0] - 1 >= 0:
-                    current_pos[0] -= 1
-        mines[current_pos[0]][current_pos[1]] = 0
+        if c % 2 == 0:
+            direction = random.choice([-1, 1])
+            x_or_y = random.choice([0, 1])
+            current_pos[x_or_y] += direction
+            current_pos[0] = max(0, min(len(mines[0]) - 1, current_pos[0]))
+            current_pos[1] = max(0, min(len(mines) - 1, current_pos[1]))
+        else:
+            # TODO: Paul i have a misson for you, 
+            # Do real pathfinding here, its not that hard
+            # But keep the random part, then the path leads to the goal but its not a straight line
+            pass
+
+
+        # temp_pos = random.randint(0, 3)
+        # match temp_pos:
+        #     case 0:
+        #         if current_pos[1] - 1 >= 0:
+        #             current_pos[1] -= 1
+        #     case 1:
+        #         if current_pos[0] + 1 <= len(mines[0]) - 1:
+        #             current_pos[0] += 1
+        #     case 2:
+        #         if current_pos[1] + 1 <= len(mines) - 1:
+        #             current_pos[1] += 1
+        #     case 3:
+        #         if current_pos[0] - 1 >= 0:
+        #             current_pos[0] -= 1
+        mines[current_pos[0]][current_pos[1]] = 2
+        c += 1
     return mines
 
 
