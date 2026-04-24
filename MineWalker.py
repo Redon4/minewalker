@@ -19,6 +19,8 @@ class MineWalker:
         self.died = False
         self.won = False
 
+        self.marked = set()
+
         self.highscore = load_score()
 
         curses.start_color()
@@ -51,7 +53,7 @@ class MineWalker:
         self.stdscr.erase()
 
         self.stdscr.addstr(f"Score: {len(self.discovered) - 1}")
-        self.stdscr.addstr("\t| Use WASD or arrow keys to move, space or enter to quit." + "\n")
+        self.stdscr.addstr("\t| WASD or arrow keys to move, space or enter to quit. \"m\" or \"e\" + direction to mark/unmark a cell." + "\n")
 
 
         around_area = self.board[max(0, self.y-1):min(self.y+2, len(self.board))]
@@ -70,7 +72,7 @@ class MineWalker:
             # self.draw_board.append([])
             for x in range(len(self.board[0])):
                 if (x, y) == (self.x, self.y) and not self.died:
-                    self.stdscr.addstr("X", self.p.color("green", rev=False)) # show the player
+                    self.stdscr.addstr("X", self.p.color("green")) # show the player
                     self.stdscr.addstr(" ")
 
 
@@ -85,6 +87,9 @@ class MineWalker:
                         self.stdscr.addstr(" ")
                     else:
                         self.stdscr.addstr("* ", self.p.color("red"))
+
+                elif (x, y) in self.marked: # marked
+                    self.stdscr.addstr("O ", self.p.color("red"))
 
 
                 else:
@@ -112,6 +117,25 @@ class MineWalker:
                 self.x -= 1
             case "d" | curses.KEY_RIGHT:
                 self.x += 1
+            case "m" | "e": # mark
+                inp2 = self.stdscr.get_wch()
+                offset=[0, 0]
+                match inp2:
+                    case "w" | curses.KEY_UP:
+                        offset[0] = -1
+                    case "s" | curses.KEY_DOWN:
+                        offset[0] = 1
+                    case "a" | curses.KEY_LEFT:
+                        offset[1] = -1
+                    case "d" | curses.KEY_RIGHT:
+                        offset[1] = 1
+
+                x = max(0, min(len(self.board[0]) -1, self.x + offset[1]))
+                y = max(0, min(len(self.board) -1, self.y + offset[0]))
+                if (x, y) in self.marked:
+                    self.marked.remove((x, y))
+                else:
+                    self.marked.add((x, y))
             case " " | "\n": # quit
                 self.game = False
 
