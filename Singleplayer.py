@@ -21,6 +21,7 @@ class MineWalker:
         self.won = False
 
         self.marked = set()
+        self.mark = False
 
         self.highscore = load_score()
 
@@ -28,7 +29,7 @@ class MineWalker:
         curses.use_default_colors()
         curses.curs_set(0)
 
-    @classmethod # damit man keine instance machen muss
+    @classmethod
     def run(cls, stdscr, width=10, height=10, density=0.2, **kwargs):
         if kwargs.get("timed", False):
             stdscr.nodelay(True)
@@ -113,69 +114,75 @@ class MineWalker:
 
     def get_input(self):
 
-        try:
-            inp = self.stdscr.get_wch()
-        except:
-            inp = None
-        self.board[self.y][self.x] = 0
+        if not self.mark:
+            try:
+                inp = self.stdscr.get_wch()
+            except:
+                inp = None
+            self.board[self.y][self.x] = 0
 
-        move=[0, 0] # y, x
-        match inp:
-            case "w" | curses.KEY_UP:
-                move[0] = -1
-            case "s" | curses.KEY_DOWN:
-                move[0] = 1
-            case "a" | curses.KEY_LEFT:
-                move[1] = -1
-            case "d" | curses.KEY_RIGHT:
-                move[1] = 1
-            case "m" | "e" | "f": # mark
-                while True:
-                    try:
-                        inp2 = self.stdscr.get_wch()
-                    except:
-                        pass
-                    else:
-                        break
-                offset=[0, 0]
-                match inp2:
-                    case "w" | curses.KEY_UP:
-                        offset[0] = -1
-                    case "s" | curses.KEY_DOWN:
-                        offset[0] = 1
-                    case "a" | curses.KEY_LEFT:
-                        offset[1] = -1
-                    case "d" | curses.KEY_RIGHT:
-                        offset[1] = 1
-                    #diagonal
-                    case "e":
-                        offset = [-1, 1]
-                    case "q":
-                        offset = [-1, -1]
-                    case "c":
-                        offset = [1, 1]
-                    case "y" | "z":
-                        offset = [1, -1]
+            move=[0, 0] # y, x
+            match inp:
+                case "w" | curses.KEY_UP:
+                    move[0] = -1
+                case "s" | curses.KEY_DOWN:
+                    move[0] = 1
+                case "a" | curses.KEY_LEFT:
+                    move[1] = -1
+                case "d" | curses.KEY_RIGHT:
+                    move[1] = 1
+                case "m" | "-" | "e" | "f": # mark
+                    self.mark = True
+                case " " | "\n" | "q" : # quit
+                    self.game = False
+                
+            if inp:# self.x = max(0, min(self.x, len(self.board[0])-1))
+                # self.y = max(0, min(self.y, len(self.board)-1))
+                if (self.x + move[1], self.y + move[0]) in self.marked and self.easy_mode: # dont move into makred cells on easy mode
+                    return
+                self.x, self.y = utils.clamp_to_matrix(self.x + move[1], self.y + move[0], self.board)
 
+                if self.board[self.y][self.x] == 1: # if youre in a mine
+                    self.died = True
+                    self.game = False
+                    return
+
+                self.discovered.add((self.x, self.y))
+
+
+        else:
+            try:
+                inp2 = self.stdscr.get_wch()
+            except:
+                inp2 = None
+            offset=[0, 0]
+            match inp2:
+                # straight
+                case "w" | curses.KEY_UP:
+                    offset[0] = -1
+                case "s" | curses.KEY_DOWN:
+                    offset[0] = 1
+                case "a" | curses.KEY_LEFT:
+                    offset[1] = -1
+                case "d" | curses.KEY_RIGHT:
+                    offset[1] = 1
+                #diagonal
+                case "e":
+                    offset = [-1, 1]
+                case "q":
+                    offset = [-1, -1]
+                case "c":
+                    offset = [1, 1]
+                case "y" | "z":
+                    offset = [1, -1]
+            
+            if inp2:
+                self.mark = False
                 x, y = utils.clamp_to_matrix(self.x + offset[1], self.y + offset[0], self.board)
                 if (x, y) not in self.discovered:
                     if (x, y) in self.marked:
                         self.marked.remove((x, y))
                     else:
                         self.marked.add((x, y))
-            case " " | "\n" | "q" : # quit
-                self.game = False
 
-
-        # self.x = max(0, min(self.x, len(self.board[0])-1))
-        # self.y = max(0, min(self.y, len(self.board)-1))
-        if (self.x + move[1], self.y + move[0]) in self.marked and self.easy_mode: # dont move into makred cells on easy mode
-            return
-        self.x, self.y = utils.clamp_to_matrix(self.x + move[1], self.y + move[0], self.board)
-
-        if self.board[self.y][self.x] == 1: # if youre in a mine
-            self.died = True
-            self.game = False
-            return
-
-        self.discovered.add((self.x, self.y))
+        
