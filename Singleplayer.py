@@ -40,7 +40,15 @@ class MineWalker:
             while clas.game:
                 clas.board[clas.y][clas.x] = 3
                 clas.draw()
-                clas.get_input()
+
+                # next part is because i am lazy in the most complicated way possible
+                # I didnt want to write the attr twice
+                to_change = ["x", "y", "discovered", "mark", "marked"]
+                new = clas.get_input(*(getattr(clas, name) for name in to_change)) # * does unpacking, goes through every attr
+                # /|\ these are the new values
+                for attr, new_val in zip(to_change, new): # zip fused two lists
+                    setattr(clas, attr, new_val)
+
             msg = "You won! " if clas.won else ("You quit! " if not clas.died else "Game Over! ")
             clas.draw()
             clas.stdscr.move(len(clas.board)+2, 0)
@@ -112,14 +120,14 @@ class MineWalker:
         self.stdscr.refresh()
 
 
-    def get_input(self):
+    def get_input(self, x, y, discovered, mark, marked):
 
-        if not self.mark:
+        if not mark: # normal movment
             try:
                 inp = self.stdscr.get_wch()
             except:
                 inp = None
-            self.board[self.y][self.x] = 0
+            self.board[y][x] = 0
 
             move=[0, 0] # y, x
             match inp:
@@ -132,25 +140,27 @@ class MineWalker:
                 case "d" | curses.KEY_RIGHT:
                     move[1] = 1
                 case "m" | "-" | "e" | "f": # mark
-                    self.mark = True
+                    mark = True
                 case " " | "\n" | "q" : # quit
                     self.game = False
-                
+
             if inp:# self.x = max(0, min(self.x, len(self.board[0])-1))
                 # self.y = max(0, min(self.y, len(self.board)-1))
-                if (self.x + move[1], self.y + move[0]) in self.marked and self.easy_mode: # dont move into makred cells on easy mode
-                    return
-                self.x, self.y = utils.clamp_to_matrix(self.x + move[1], self.y + move[0], self.board)
+                if (x + move[1], y + move[0]) in marked and self.easy_mode: # dont move into makred cells on easy mode
+                    pass
 
-                if self.board[self.y][self.x] == 1: # if youre in a mine
-                    self.died = True
-                    self.game = False
-                    return
+                else:
+                    x, y = utils.clamp_to_matrix(x + move[1], y + move[0], self.board)
 
-                self.discovered.add((self.x, self.y))
+                    if self.board[y][x] == 1: # if youre in a mine
+                        self.died = True
+                        self.game = False
+                        #return
+                    else: # if youre not dead
+                        discovered.add((x, y))
 
 
-        else:
+        else: # marking
             try:
                 inp2 = self.stdscr.get_wch()
             except:
@@ -175,14 +185,14 @@ class MineWalker:
                     offset = [1, 1]
                 case "y" | "z":
                     offset = [1, -1]
-            
-            if inp2:
-                self.mark = False
-                x, y = utils.clamp_to_matrix(self.x + offset[1], self.y + offset[0], self.board)
-                if (x, y) not in self.discovered:
-                    if (x, y) in self.marked:
-                        self.marked.remove((x, y))
-                    else:
-                        self.marked.add((x, y))
 
-        
+            if inp2:
+                mark = False
+                x1, y1 = utils.clamp_to_matrix(x + offset[1], y + offset[0], self.board)
+                if (x1, y1) not in discovered:
+                    if (x1, y1) in marked:
+                        marked.remove((x1, y1))
+                    else:
+                        marked.add((x1, y1))
+
+        return x, y, discovered, mark, marked
