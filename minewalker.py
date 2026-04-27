@@ -29,41 +29,6 @@ class MineWalker:
         curses.use_default_colors()
         curses.curs_set(0)
 
-    @classmethod
-    def run(cls, stdscr, width=10, height=10, density=0.2, **kwargs):
-        if kwargs.get("timed", False):
-            stdscr.nodelay(True)
-        cls.easy_mode = kwargs.get("easy_mode", False)
-        while True:
-            clas = cls(stdscr, width, height, density)
-
-            while clas.game:
-                clas.board[clas.y][clas.x] = 3
-                clas.draw()
-
-                # next part is because i am lazy in the most complicated way possible
-                # I didnt want to write the attr twice
-                to_change = ["x", "y", "discovered", "mark", "marked"]
-                new = clas.get_input(*(getattr(clas, name) for name in to_change)) # * does unpacking, goes through every attr
-                # /|\ these are the new values
-                for attr, new_val in zip(to_change, new): # zip fused two lists
-                    setattr(clas, attr, new_val)
-
-            msg = "You won! " if clas.won else ("You quit! " if not clas.died else "Game Over! ")
-            clas.draw()
-            clas.stdscr.move(len(clas.board)+2, 0)
-            clas.stdscr.addstr(f"{msg}Press \"q\" to exit, space or enter to play again.")
-            while True:
-                try:
-                    key = clas.stdscr.getkey()
-                except:
-                    continue
-                if key in ("\n", " "): # enter
-                    break # restart
-                elif key == "q": # space
-                    return # quit
-            save_score(max(clas.highscore, len(clas.discovered) - 1)) # save the highscore
-
 
     def draw(self):
         self.stdscr.erase()
@@ -81,7 +46,7 @@ class MineWalker:
         self.stdscr.addstr(f"Mines around: {around_cnt}", self.p.color("green") if around_cnt == 0 else self.p.color("red"))
         self.stdscr.addstr("\t| ")
 
-        self.stdscr.addstr(f"Highscore: {self.highscore}" + "\n", self.p.color("yellow"))
+        self.stdscr.addstr(f"Highscore: {self.highscore if self.highscore > len(self.discovered) - 1 else len(self.discovered) - 1}" + (" NEW HIGHSCORE!" if len(self.discovered) - 1 > self.highscore else "") + "\n", self.p.color("yellow"))
 
         # self.draw_board=[]
         for y in range(len(self.board)):
