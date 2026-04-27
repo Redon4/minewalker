@@ -33,7 +33,7 @@ class MineWalker:
         self.max_score_len = len(str(len(self.board) * len(self.board[0])))
 
 
-    def draw(self):
+    def draw(self, rem_time=-1):
         self.stdscr.erase()
 
         self.stdscr.addstr(f"Score: {len(self.discovered) - 1:{self.max_score_len}d}")
@@ -48,6 +48,10 @@ class MineWalker:
 
         self.stdscr.addstr(f"Mines around: {around_cnt}", self.p.color("green") if around_cnt == 0 else self.p.color("red"))
         self.stdscr.addstr("\t| ")
+
+        if rem_time != -1:
+            self.stdscr.addstr(f"Time: {f"{rem_time:>{self.time_length}.1f}s":5s}")
+            self.stdscr.addstr("\t| ")
 
         self.stdscr.addstr(f"Highscore: {self.highscore if self.highscore > len(self.discovered) - 1 else len(self.discovered) - 1:{self.max_score_len}d}" + (" NEW HIGHSCORE!" if len(self.discovered) - 1 > self.highscore else "") + "\n", self.p.color("yellow"))
 
