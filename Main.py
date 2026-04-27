@@ -1,8 +1,9 @@
 import curses
-from Singleplayer import MineWalker
+import game_modes as game
+
 
 if __name__ == "__main__":
     width, height = 20, 20
-    density = 0.2
+    density = 0.25
 
-    curses.wrapper(MineWalker.run, width, height, density, timed=True, easy_mode=True)
+    curses.wrapper(game.singleplayer, width, height, density, timed=True, easy_mode=True)
