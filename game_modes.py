@@ -1,9 +1,10 @@
 from minewalker import MineWalker as mine
 from score import save_score, load_score
+from time import sleep
 
 
 def singleplayer(stdscr, width=10, height=10, density=0.2, **kwargs):
-    stdscr.nodelay(kwargs.get("timed", False))
+    stdscr.nodelay(kwargs.get("timed", False)) # make it not stop when on timed mode
     mine.easy_mode = kwargs.get("easy_mode", False)
     while True:
         clas = mine(stdscr, width, height, density)
@@ -20,15 +21,18 @@ def singleplayer(stdscr, width=10, height=10, density=0.2, **kwargs):
             for attr, new_val in zip(to_change, new): # zip fused two lists
                 setattr(clas, attr, new_val)
 
+            sleep(0.001)
+
         msg = "You won! " if clas.won else ("You quit! " if not clas.died else "Game Over! ")
         clas.draw()
-        clas.stdscr.move(len(clas.board)+2, 0)
+        clas.stdscr.move(len(clas.board) + 2, 0)
         clas.stdscr.addstr(f"{msg}Press \"q\" to exit, space or enter to play again.")
         save_score(max(clas.highscore, len(clas.discovered) - 1)) # save the highscore
         while True:
             try:
                 key = clas.stdscr.getkey()
             except:
+                sleep(0.01)
                 continue
             if key in ("\n", " "): # enter
                 break # restart

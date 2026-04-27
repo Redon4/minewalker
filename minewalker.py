@@ -30,10 +30,13 @@ class MineWalker:
         curses.curs_set(0)
 
 
+        self.max_score_len = len(str(len(self.board) * len(self.board[0])))
+
+
     def draw(self):
         self.stdscr.erase()
 
-        self.stdscr.addstr(f"Score: {len(self.discovered) - 1}")
+        self.stdscr.addstr(f"Score: {len(self.discovered) - 1:{self.max_score_len}d}")
         self.stdscr.addstr("\t| WASD or arrow keys to move; space, enter or \"q\" to exit. \"m\" or \"e\" + direction to mark/unmark a cell." + "\n")
 
 
@@ -46,7 +49,7 @@ class MineWalker:
         self.stdscr.addstr(f"Mines around: {around_cnt}", self.p.color("green") if around_cnt == 0 else self.p.color("red"))
         self.stdscr.addstr("\t| ")
 
-        self.stdscr.addstr(f"Highscore: {self.highscore if self.highscore > len(self.discovered) - 1 else len(self.discovered) - 1}" + (" NEW HIGHSCORE!" if len(self.discovered) - 1 > self.highscore else "") + "\n", self.p.color("yellow"))
+        self.stdscr.addstr(f"Highscore: {self.highscore if self.highscore > len(self.discovered) - 1 else len(self.discovered) - 1:{self.max_score_len}d}" + (" NEW HIGHSCORE!" if len(self.discovered) - 1 > self.highscore else "") + "\n", self.p.color("yellow"))
 
         # self.draw_board=[]
         for y in range(len(self.board)):
