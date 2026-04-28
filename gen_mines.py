@@ -3,11 +3,13 @@ from utils import clamp, clamp_to_matrix
 
 
 def gen_mines(w, h, density):
-    if density > 0:
-        choice_list = [0] * int(1 / density - 1) + [1] # proper desity
-    else:
-        choice_list = [0]
-    mines = [[random.choice(choice_list) for _ in range(w)] for _ in range(h)]
+    # if density > 0:
+    #     density /= 100
+    #     choice_list = [0] * int(1 / density - 1) + [1] # (not) proper desity
+    # else:
+    #     choice_list = [0]
+    # mines = [[random.choice(choice_list) for _ in range(w)] for _ in range(h)]
+    mines = [[1 if random.random()*100 < density else 0 for _ in range(w)] for _ in range(h)] # now it proper!
     mines[0][:2] = [0, 0] # spawn area
     mines[1][:2] = [0, 0]
 
@@ -72,15 +74,15 @@ def clear_path(stdscr, mines=[], randomness=3, delay=None):
             current_pos[0], current_pos[1] = clamp_to_matrix(current_pos[0], current_pos[1], mines) # clamp the random
 
         if not testing:
-            mines[current_pos[0]][current_pos[1]] = 2
+            mines[current_pos[1]][current_pos[0]] = 2
 
         else:
-            mines[current_pos[0]][current_pos[1]] = " "
+            mines[current_pos[1]][current_pos[0]] = " "
             time.sleep(delay)
             stdscr.erase()
             for y, row in enumerate(mines):
                 stdscr.addstr(y, 0, " ".join(map(str, row)))
-                stdscr.move(current_pos[0], current_pos[1] * 2)
+                stdscr.move(current_pos[1], current_pos[0] * 2)
             stdscr.refresh()
 
         cnt += 1
