@@ -98,6 +98,6 @@ if __name__ == "__main__":
 
     w, h = 50, 50
     density = 0.25
-    curses.wrapper(clear_path, gen_mines(w, h, density), randomness=int(input("How random shall it be?\n:")), delay=0.01)
+    curses.wrapper(clear_path, gen_mines(w, h, density), randomness=int(input("How random shall it be?\n:")), delay=float(input("How many seconds between every step?\n:")))
     # for row in mines:
     #     print(" ".join(str(x) for x in row))

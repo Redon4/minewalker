@@ -23,7 +23,9 @@ class Perry:
             curses.init_pair(color[0], color[1], color[2])
 
         elif isinstance(NAME, int) and not BACK:
-            return curses.color_pair(NAME)
+            if reverse or rev:
+                return curses.color_pair(NAME) | curses.A_REVERSE 
+            return curses.color_pair(NAME) 
 
         if reverse or rev:
             return curses.color_pair(self.colors[pair_id][0]) | curses.A_REVERSE
