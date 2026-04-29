@@ -45,13 +45,25 @@ def clear_path(stdscr, mines=[], randomness=3, delay=None):
                 # then dont go there, pass instead >:)
 
                 found=0
-                cnt1=0
-                for j in new_pos:
-                    lenmines = [goalx, goaly]
-                    if mines[min(j + 1, lenmines[cnt1])] == 2 or mines[max(0, j - 1)] == 2:
+                # cnt1=0
+                # lenmines = [goalx, goaly]
+                # for j in new_pos[1], new_pos[0]:
+                #     # loop through x and y of the possible new pos
+                #     if mines[min(j + 1, lenmines[cnt1])] == 2 or mines[max(0, j - 1)] == 2:
+                #         # if position below or right of you is 2 then we found an already went to position
+                #         found += 1
+                #         cnt1 += 1
+                
+                for shift in l:
+                    temp_pos = [
+                        clamp(0, new_pos[0] + shift[0], len(mines[0]) - 1), 
+                        clamp(0, new_pos[1] + shift[1], len(mines) - 1),
+                        # clamp_to_matrix(new_pos[0], new_pos[1], mines)
+                    ]
+                    if mines[temp_pos[1]][temp_pos[0]] == 2:
                         found += 1
-                        cnt1 += 1
 
+                # current_distance = max(goalx - new_pos[0], 1) + max(goaly - new_pos[1], 1)
                 current_distance = (goalx - new_pos[0]) + (goaly - new_pos[1])
 
                 if found > 2:
@@ -66,6 +78,8 @@ def clear_path(stdscr, mines=[], randomness=3, delay=None):
             # go the fastest way
             current_pos[0] += fastest[1][0]
             current_pos[1] += fastest[1][1]
+
+            current_pos = clamp_to_matrix(current_pos[0], current_pos[1], mines)
 
         else: # random
             direction = random.choice([-1, 1])
@@ -98,7 +112,7 @@ if __name__ == "__main__":
     import curses
     import time
 
-    w, h = 50, 50
+    w, h = 30, 30
     density = 0.25
     curses.wrapper(clear_path, gen_mines(w, h, density), randomness=int(input("How random shall it be?\n:")), delay=float(input("How many seconds between every step?\n:")))
     # for row in mines:

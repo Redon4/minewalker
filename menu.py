@@ -9,11 +9,12 @@ class Menu:
         self.index = [0, 0] # main menu, sub menu
 
 
-        self.size = [20, 20] # w, h
+        self.size = [25, 25] # w, h
         self.time_limit = [40, 40] # Single-, Multiplayer
         self.time_active = [False, False]
         self.density = 25
         self.easy = True
+        self.center = True
 
 
         self.p = P(stdscr)
@@ -42,57 +43,75 @@ class Menu:
         self.menu_list = [
             {
                 "label": "Singleplayer",
-                "type": "time",
+                "id": "singleplayer",
+                "type": "start",
+                "subtype": "time",
                 "limit": self.time_limit[0],
                 "idx": 0,
-                "fields": ["start", "toggle", "value"],
+                "fields": {"Singelplayer":"start", "Time limit":"toggle", "seconds":"value"},
                 "width":3,
             },
 
             {
                 "label": "Multiplayer",
-                "type": "time",
+                "id": "multiplayer",
+                "type": "start",
+                "subtype": "time",
                 "limit": self.time_limit[1],
                 "idx": 1,
-                "fields": ["start", "toggle", "value"],
+                "fields": {"Multiplayer":"start", "Time limit":"toggle", "seconds":"value"}, 
                 "width":3,
             },
 
             {
                 "label": "Board size",
-                "type": "size",
+                "id": "size",
+                "type": "value",
                 "value": self.size,
-                "fields": ["none", "value", "value"],
+                "fields": {"Board size":"none", "width":"value", "height":"value"},
                 "width":3,
             },
 
             {
                 "label": "Density",
-                "type": "density",
+                "id": "density",
+                "type": "value",
                 "value": self.density,
-                "fields": ["none", "value"],
+                "fields": {"Density":"none", "percent":"value"},
                 "width": 2,
             },
 
             {
                 "label": "Easy mode",
-                "type": "setting",
+                "id": "easy_mode",
+                "type": "toggle",
                 "value": self.easy,
-                "fields": ["toogle"],
+                "fields": {"Easy_mode":"toogle"},
                 "width":1,
+            },
+
+            {
+                "label": "Center Game",
+                "id": "center",
+                "type": "toggle",
+                "value": self.center,
+                "fields": {"Center Game":"toggle"},
+                "width": 1,
             },
 
             # {
             #     "label": "Settings",
+            #     "id": "settings",
             #     "type": "submenu",
-            #     "fields": ["submenu"],
+            #     "fields": {"Settings:"submenu"},
             #     "width":1,
             # },
 
             {
                 "label": "Quit",
+                "id": "quit",
                 "type": "action",
-                "fields": ["quit"],
+                "fields": {"Quit":"quit"},
                 "width":1,
             },
         ]
@@ -100,24 +119,24 @@ class Menu:
 
     def get_input(self):
         item = self.menu_list[self.index[0]]
-        field = item["fields"][self.index[1]]
+        field = list(item["fields"].values())[self.index[1]]
 
         inp = self.stdscr.get_wch()
 
         match inp:
             case "w" | curses.KEY_UP | "8":
                 if field == "value":
-                    if item["type"] == "time":
+                    if item.get("subtype") == "time":
                         idx = item["idx"]
                         if self.time_limit[idx] >= 5:
                             self.time_limit[idx] -= 5
 
-                    elif item["type"] == "size":
+                    elif item["id"] == "size":
                         idx = self.index[1] - 1
                         if self.size[idx] >= 4:
                             self.size[idx] -= 2
 
-                    elif item["type"] == "density":
+                    elif item["id"] == "density":
                         self.density = clamp(0, self.density - 5, 100)
 
 
@@ -128,13 +147,13 @@ class Menu:
 
             case "s" | curses.KEY_DOWN | "2":
                 if field == "value":
-                    if item["type"] == "time":
+                    if item.get("subtype") == "time":
                         self.time_limit[item["idx"]] += 5
 
-                    elif item["type"] == "size":
+                    elif item["id"] == "size":
                         self.size[self.index[1] - 1] += 2
 
-                    elif item["type"] == "density":
+                    elif item["id"] == "density":
                         self.density = clamp(0, self.density + 5, 100)
                 elif self.index[1] == 0:
                     self.index[0] = (self.index[0] + 1) % len(self.menu_list)
@@ -149,13 +168,14 @@ class Menu:
                 self.index[1] = (self.index[1] + 1) % item["width"]
 
             case "\n" | " " | "5":
-                if item["label"] == "Singleplayer" and field == "start":
+                if item["id"] == "singleplayer" and field == "start":
                     game.singleplayer(
                         self.stdscr,
                         self.size[0], self.size[1],
                         self.density,
                         playtime=self.time_limit[0] if self.time_active[0] else -1,
-                        easy_mode=self.easy
+                        easy_mode=self.easy,
+                        center=self.center,
                     )
 
                     self.stdscr.nodelay(False)
@@ -166,11 +186,14 @@ class Menu:
                     pass
                     # TODO Multiplayer
 
-                elif item["type"] == "time" and field == "toggle":
+                elif item.get("subtype") == "time" and field == "toggle":
                     self.time_active[item["idx"]] = not self.time_active[item["idx"]]
 
                 elif item["label"] == "Easy mode":
                     self.easy = not self.easy
+
+                elif item["id"] == "center":
+                    self.center = not self.center
 
                 elif item["label"] == "Quit":
                     self.game = False
@@ -184,35 +207,67 @@ class Menu:
         self.stdscr.erase()
         y=get_y_middle(self.stdscr, self.menu_list)
 
+        max_label_list=[]
+        for dit in self.menu_list:
+            max_label_list.append(len(dit["label"]))
+        max_label_len = max(max_label_list)
+
+
         self.stdscr.addstr(y - 3, get_middle(self.stdscr, "Minewalker"), "Minewalker" + "\n", self.p.color("Red"))
         for i, item in enumerate(self.menu_list):
             label = item["label"]
 
 
             start = get_middle(self.stdscr, label)
-            if label == "Easy mode":
+            if item["type"] == "toggle":
                 # self.stdscr.addstr(y + i, start, label, self.p.color("green" if self.easy else 0, rev=(True if ...)))
-                color = "green" if self.easy else 0
+                color = "green" if item["value"] else "red"
             else:
                 color = 0
+            # if item["type"] in ("toggle", "start"):
+                
+            #     if item["type"] == "toggle":
+            #         msg = "->"
+            #     elif item["type"] == "start":
+            #         msg = "<"
+            #     self.stdscr.addstr(y + i, start - len(msg), msg)
+
             self.stdscr.addstr(y + i, start, label, self.p.color(color, rev=(True if [i, 0] == self.index else False)))
+            
+            # if item["type"] in ("toggle", "start"):
+            #     if item["type"] == "toggle":
+            #         msg = "<-"
+            #     elif item["type"] == "start":
+            #         msg = ">"
+            #     self.stdscr.addstr(msg)
 
-            if i == self.index[0]:
+            
+            if item["width"] > 1:
+                self.stdscr.addstr(" " * ((max_label_len - len(label)) // 2) + "  " + ">") #TODO
+                # self.stdscr.addstr(" >") #TODO
 
-                field = item["fields"][self.index[1]]
+            if i == self.index[0] and self.index[1] > 0:
+
+                fields = list(item["fields"].items())
+                field = fields[self.index[1]]
                 # x_start = start + len(e[0]) + len(" ")
                 # y_start = y + i
                 # if i in (0, 1, 2):
                 #     self.stdscr.addstr(f"\t| ")
-                self.stdscr.addstr("\t")
-                if item["type"] == "time":
+                self.stdscr.addstr(" ")
+                if item.get("subtype") == "time":
                     idx = item["idx"]
-
-                    self.stdscr.addstr("Time limit", #i +
-                        self.p.color("green" if self.time_active[idx] else 0,
+                    
+                    # if fields[1][1] == "toggle":
+                        # self.stdscr.addstr("->")
+                    self.stdscr.addstr(
+                        fields[1][0], # the toggle
+                        self.p.color("green" if self.time_active[idx] else "red",
                             rev=(True if self.index[1] == 1 else False)
                         )
                     )
+                    # if fields[1][1] == "toggle":
+                    #     self.stdscr.addstr("<-")
                     self.stdscr.addstr("  ")
                     self.stdscr.addstr(str(item["limit"]),
                         self.p.color(0,
@@ -227,7 +282,7 @@ class Menu:
                         if item["limit"] + shift * 5 >= 0:
                             self.stdscr.addstr(y1 + shift, x1 - len(str(item["limit"] + shift * 5) + "s"), str(item["limit"] + shift * 5) + "s")
 
-                elif item["type"] == "size":
+                elif item["id"] == "size":
                     self.stdscr.addstr("w: ")
                     self.stdscr.addstr(str(self.size[0]),
                         self.p.color(0,
@@ -253,12 +308,13 @@ class Menu:
                             self.stdscr.addstr(y1 + shift, x1 - len(str(self.size[1] + shift * 2)), str(self.size[1] + shift * 2))
 
 
-                elif item["type"] == "density":
-                    placeholder = " " * (3 - len(str(self.density)))
-                    self.stdscr.addstr(placeholder)
+                # self.stdscr.addstr(" <")
+                elif item["id"] == "density":
+                    # placeholder = " " * (3 - len(str(self.density)))
+                    # self.stdscr.addstr(placeholder)
                     self.stdscr.addstr(f"{self.density:d}",
                         self.p.color(0,
-                            rev=(True if field == "value" else False)
+                            rev=(True if field[1] == "value" else False)
                         )
                     )
                     self.stdscr.addstr(" %")
@@ -269,12 +325,14 @@ class Menu:
                         if 0 <= val <= 95:
                             self.stdscr.addstr(
                                 y1 + shift,
-                                x1 - len(f"{val:>3d} %"),
-                                f"{val:>3d} %"
+                                x1 - len(f"{val:>2d} %"),
+                                f"{val:>2d} %"
                             )
                     # y1, x1 = self.stdscr.getyx()
                     # self.stdscr.move(y1 - 1, x1)
                     # self.stdscr.addstr(" %")
+                # self.stdscr.move(y1, x1)
+                # self.stdscr.addstr(" <")
 
 
         self.stdscr.refresh()
