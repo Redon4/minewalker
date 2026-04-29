@@ -1,11 +1,13 @@
 from minewalker import MineWalker as mine
 from score import save_score, load_score
 import time
+import utils
 
 
 def singleplayer(stdscr, width=10, height=10, density=0.2, **kwargs): # defaults: playtime: -1; easy_mode: True
     mine.timed = True if kwargs.get("playtime", -1) != -1 else False
     mine.easy_mode = kwargs.get("easy_mode", False)
+    mine.center = kwargs.get("center", True)
     stdscr.nodelay(mine.timed) # make it not stop when on timed mode
     if mine.timed:
         mine.time_length = len(str(int(kwargs.get("playtime", 0))))
@@ -33,7 +35,7 @@ def singleplayer(stdscr, width=10, height=10, density=0.2, **kwargs): # defaults
             to_change = ["x", "y", "discovered", "mark", "marked"]
             new = clas.get_input(*(getattr(clas, name) for name in to_change)) # * does unpacking, goes through every attr
             # /|\ these are the new values
-            for attr, new_val in zip(to_change, new): # zip fused two lists
+            for attr, new_val in zip(to_change, new): # zip fuses two lists
                 setattr(clas, attr, new_val)
 
             time.sleep(0.001)
@@ -47,8 +49,21 @@ def singleplayer(stdscr, width=10, height=10, density=0.2, **kwargs): # defaults
         else:
             msg = "You quit! "
         clas.draw(rem_time if clas.timed else -1)
-        clas.stdscr.move(len(clas.board) + 2, 0)
-        clas.stdscr.addstr(f"{msg}Press \"q\" to exit, space or enter to play again.")
+        # temp_y = clas.stdscr.getmaxyx()[0] - len(clas.board) * 1 + 2
+        # temp_x = clas.stdscr.getmaxyx()[1] - len(clas.board[0]) * 2
+        
+
+        if clas.center:
+            board_width = len(clas.board[0]) * 2
+            h, w = clas.stdscr.getmaxyx()
+
+            x_start = (w - board_width) // 2
+            y = (h + len(clas.board)) // 2 + 1
+            clas.stdscr.addstr(y, x_start, f"{msg}Press \"q\" to exit, space or enter to play again.")
+        else:
+            clas.stdscr.move(clas.stdscr.getyx()[0] + 2, 0)
+            clas.stdscr.addstr(f"{msg}Press \"q\" to exit, space or enter to play again.")
+
         save_score(max(clas.highscore, len(clas.discovered) - 1)) # save the highscore
         while True:
             try:
