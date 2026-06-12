@@ -9,7 +9,7 @@ class Menu:
         self.index = [0, 0] # main menu, sub menu
 
 
-        self.size = [25, 25] # w, h
+        self.size = [24, 24] # w, h
         self.time_limit = [40, 40] # Single-, Multiplayer
         self.time_active = [False, False]
         self.density = 25
